@@ -11,7 +11,12 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-
+from dotenv import dotenv_values
+import os
+# 获取当前脚本所在目录（即 configs 目录）
+current_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(current_dir, "settings.env")
+DJANGO_HOST = dotenv_values(env_path)["DJANGO_HOST"]
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +30,7 @@ SECRET_KEY = 'django-insecure-f_lhxl$f*(dhwn88-g(_+(hl(2pie$s7t65o4bpd_p&68t(z=e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [DJANGO_HOST]
 
 
 # Application definition
