@@ -78,7 +78,7 @@ class AGamePlayground {
 
 }
 
-class AGame{
+export class AGame{
     constructor(id) {
         this.id = id;
         this.$a_game = $('#' + id);
