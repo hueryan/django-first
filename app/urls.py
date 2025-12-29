@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    # path('', include('game.urls')),  # 当为空的时候，默认直接调用game.urls。当写入game时，则在浏览器url加入game返回内容
+    path('', include('game.urls.index')),  # 当为空的时候，默认直接调用game.urls。当写入game时，则在浏览器url加入game返回内容
     path('admin/', admin.site.urls),
 ]
