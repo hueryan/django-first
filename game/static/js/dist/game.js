@@ -134,13 +134,16 @@ class Player extends AGameObject {
         this.y = y;
         this.vx = 0;
         this.vy = 0;
+        this.damage_x = 0;
+        this.damage_y = 0;
+        this.damage_speed = 0;
         this.move_length = 0;
         this.radius = radius;
         this.color = color;
         this.speed = speed;
         this.is_me = is_me;
         this.eps = 0.1;
-
+        this.friction = 0.9;
         this.cur_skill = null;
     }
 
@@ -186,9 +189,9 @@ class Player extends AGameObject {
         let angle = Math.atan2(ty - this.y, tx - this.x);
         let vx = Math.cos(angle), vy = Math.sin(angle);
         let color = "orange";
-        let speed = this.playground.height * 0.5;
+        let speed = this.playground.height * 0.5;  // 火球速度
         let move_length = this.playground.height * 1;
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length);
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
     }
 
     get_dist (x1, y1, x2 ,y2) {
@@ -204,20 +207,40 @@ class Player extends AGameObject {
         this.vy = Math.sin(angle);
     }
 
+    is_attacked(angle, damge) {
+        this.radius -= damge;
+        if (this.radius < this.eps) {
+            this.destroy();
+            return false;
+        }
+        this.damage_x = Math.cos(angle);
+        this.damage_y = Math.sin(angle);
+        this.damage_speed = damge * 100;  // 被攻击后击退距离
+        this.speed *= 1.25 // 被攻击后速度增加
+    }
+
     update() {
-        if (this.move_length < this.eps) {
-            this.move_length = 0;
+        if (this.damage_speed > 10) {  // 被攻击后，小于10不处理，可以自己移动
             this.vx = this.vy = 0;
-            if (!this.is_me) {
-                let tx = Math.random() * this.playground.width;
-                let ty = Math.random() * this.playground.height;
-                this.move_to(tx, ty);
-            }
+            this.move_length = 0;
+            this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
+            this.y += this.damage_y * this.damage_speed * this.timedelta / 1000;
+            this.damage_speed *= this.friction;
         } else {
-            let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
-            this.x += this.vx * moved;
-            this.y += this.vy * moved;
-            this.move_length -= moved;
+            if (this.move_length < this.eps) {
+                this.move_length = 0;
+                this.vx = this.vy = 0;
+                if (!this.is_me) {
+                    let tx = Math.random() * this.playground.width;
+                    let ty = Math.random() * this.playground.height;
+                    this.move_to(tx, ty);
+                }
+            } else {
+                let moved = Math.min(this.move_length, this.speed * this.timedelta / 500);  // 小球移动速度
+                this.x += this.vx * moved;
+                this.y += this.vy * moved;
+                this.move_length -= moved;
+            }
         }
         this.render();
     }
@@ -230,7 +253,7 @@ class Player extends AGameObject {
     }
 }
 class FireBall extends AGameObject {
-    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length) {
+    constructor(playground, player, x, y, radius, vx, vy, color, speed, move_length, damage) {
         super();
         this.playground = playground;
         this.player = player;
@@ -243,7 +266,8 @@ class FireBall extends AGameObject {
         this.color = color;
         this.speed = speed;
         this.move_length = move_length;
-        this.eps = 0.1;
+        this.damage = damage;
+        this.eps = 0.01;
     }
     start() {
 
@@ -257,14 +281,41 @@ class FireBall extends AGameObject {
         this.x += this.vx * moved;
         this.y += this.vy * moved;
         this.move_length -= moved;
+
+        for (let i = 0; i < this.playground.players.length; i++) {
+            let player = this.playground.players[i];
+            if (this.player !== player && this.is_collision(player)){
+                this.attack(player);
+            }
+        }
+
         this.render();
     }
+
+    get_dist(x1, y1, x2, y2) {
+        let dx = x1 - x2;
+        let dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    is_collision(player) {
+        let distance = this.get_dist(this.x, this.y, player.x, player.y);
+        if (distance < this.radius + player.radius)
+            return true;
+        return false;
+    }
+    attack(player) {
+        let angle = Math.atan2(player.y - this.y, player.x - this.x);
+        player.is_attacked(angle, this.damage);
+        this.destroy();
+    }
+
     render() {
         this.ctx.beginPath();
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
-        this.ctx.closePath();
+        // this.ctx.closePath();
     }
 }
 class AGamePlayground {
