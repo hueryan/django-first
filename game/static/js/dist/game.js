@@ -145,8 +145,12 @@ class Player extends AGameObject {
     }
 
     start() {
-        if (this.is_me) {
+        if (this.is_me) {  // 自己用键盘鼠标控制
             this.add_listening_events();
+        } else {  // 敌人随机游走
+            let tx = Math.random() * this.playground.width;
+            let ty = Math.random() * this.playground.height;
+            this.move_to(tx, ty);
         }
     }
 
@@ -204,6 +208,11 @@ class Player extends AGameObject {
         if (this.move_length < this.eps) {
             this.move_length = 0;
             this.vx = this.vy = 0;
+            if (!this.is_me) {
+                let tx = Math.random() * this.playground.width;
+                let ty = Math.random() * this.playground.height;
+                this.move_to(tx, ty);
+            }
         } else {
             let moved = Math.min(this.move_length, this.speed * this.timedelta / 1000);
             this.x += this.vx * moved;
@@ -271,6 +280,9 @@ class AGamePlayground {
         this.players = [];
         this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.15, true))
 
+        for (let i = 0; i < 5; i++) {  // 创建敌人数量
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "blue", this.height * 0.15, false))
+        }
         this.start();
     }
 
