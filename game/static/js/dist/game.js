@@ -183,6 +183,7 @@ class Player extends AGameObject {
         this.is_me = is_me;
         this.eps = 0.1;
         this.friction = 0.9;
+        this.spent_time = 0;  // 玩家生成时间
         this.cur_skill = null;
     }
 
@@ -268,11 +269,18 @@ class Player extends AGameObject {
         this.damage_y = Math.sin(angle);
         this.damage_speed = damge * 100;  // 被攻击后击退距离
         this.speed *= 1.25 // 被攻击后速度增加
-
-
     }
 
     update() {
+        this.spent_time += this.timedelta / 1000;
+        if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {  // 设置开局4s后人机开始攻击, 每5s发射一次火球
+            let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];  // 攻击随机一个玩家
+            let tx = player.x + player.speed * this.vx * this.timedelta / 1000 * 0.3;
+            let ty = player.y + player.speed * this.vy * this.timedelta / 1000 * 0.3;  // 预判0.3之后的位置
+            this.shoot_fireball(tx, ty);
+            // this.shoot_fireball(player.x, player.y);
+        }
+
         if (this.damage_speed > 10) {  // 被攻击后，小于10不处理，可以自己移动
             this.vx = this.vy = 0;
             this.move_length = 0;
@@ -303,6 +311,12 @@ class Player extends AGameObject {
         this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
+    }
+    on_destroy() {
+        for (let i = 0; i < this.playground.players.length; i++) {  // 死亡后删除玩家
+            if (this.playground.players[i] === this)
+                this.playground.players.splice(i, 1);
+        }
     }
 }
 class FireBall extends AGameObject {
