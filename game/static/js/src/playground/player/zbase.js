@@ -90,6 +90,17 @@ class Player extends AGameObject {
         this.damage_y = Math.sin(angle);
         this.damage_speed = damge * 100;  // 被攻击后击退距离
         this.speed *= 1.25 // 被攻击后速度增加
+
+        for (let i = 0; i < 20 + Math.random() * 10; i ++) {  // 粒子参数
+            let x = this.x, y = this.y;
+            let radius = this.radius * Math.random() * 0.1;
+            let angle = Math.PI * 2 * Math.random();
+            let vx = Math.cos(angle), vy = Math.sin(angle);
+            let color = this.color;
+            let speed = this.speed * 10;
+            let move_length = this.radius * Math.random() * 5;
+            new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
+        }
     }
 
     update() {
