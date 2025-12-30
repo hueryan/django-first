@@ -247,15 +247,6 @@ class Player extends AGameObject {
     }
 
     is_attacked(angle, damge) {
-        this.radius -= damge;
-        if (this.radius < this.eps) {
-            this.destroy();
-            return false;
-        }
-        this.damage_x = Math.cos(angle);
-        this.damage_y = Math.sin(angle);
-        this.damage_speed = damge * 100;  // 被攻击后击退距离
-        this.speed *= 1.25 // 被攻击后速度增加
 
         for (let i = 0; i < 20 + Math.random() * 10; i ++) {  // 粒子参数
             let x = this.x, y = this.y;
@@ -267,6 +258,18 @@ class Player extends AGameObject {
             let move_length = this.radius * Math.random() * 5;
             new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
+
+        this.radius -= damge;
+        if (this.radius < this.eps) {
+            this.destroy();
+            return false;
+        }
+        this.damage_x = Math.cos(angle);
+        this.damage_y = Math.sin(angle);
+        this.damage_speed = damge * 100;  // 被攻击后击退距离
+        this.speed *= 1.25 // 被攻击后速度增加
+
+
     }
 
     update() {
@@ -382,11 +385,15 @@ class AGamePlayground {
         this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.15, true))
 
         for (let i = 0; i < 5; i++) {  // 创建敌人数量
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "blue", this.height * 0.15, false))
+            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.get_random_color(), this.height * 0.15, false))
         }
         this.start();
     }
 
+    get_random_color() {  // 随机定义颜色
+        let colors = ["blue", "red", "pink", "grey", "green"];
+        return colors[Math.floor(Math.random() * 5)];
+    }
 
     start() {
     }
