@@ -25,9 +25,10 @@ DJANGO_HOST = dotenv_values(ENV_FILE)["DJANGO_HOST"]
 SECRET_KEY = 'django-insecure-f_lhxl$f*(dhwn88-g(_+(hl(2pie$s7t65o4bpd_p&68t(z=e'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = [DJANGO_HOST]
+ALLOWED_HOSTS = [DJANGO_HOST, "app3749.acapp.acwing.com.cn"]
 
 
 # Application definition
