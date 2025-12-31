@@ -18,7 +18,13 @@ class Player extends AGameObject {
         this.eps = 0.1;
         this.friction = 0.9;
         this.spent_time = 0;  // 玩家生成时间
+
         this.cur_skill = null;
+        if (this.is_me) {
+            this.img = new Image();
+            // console.log("url",this.playground.root.settings.photo);  // 调试显示图片路径
+            this.img.src = this.playground.root.settings.photo;
+        }
     }
 
     start() {
@@ -33,17 +39,17 @@ class Player extends AGameObject {
 
     add_listening_events() {
         let outer = this;
-        this.playground.game_map.$canvas.on("contextmenu", function (){
+        this.playground.game_map.$canvas.on("contextmenu", function () {
             return false;
         });
 
-        this.playground.game_map.$canvas.mousedown(function (e){
+        this.playground.game_map.$canvas.mousedown(function (e) {
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
                 outer.move_to(e.clientX - rect.left, e.clientY - rect.top);
             } else if (e.which === 1) {
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball(e.clientX - rect.left,  e.clientY - rect.top);
+                    outer.shoot_fireball(e.clientX - rect.left, e.clientY - rect.top);
                 }
 
                 outer.cur_skill = null;
@@ -69,7 +75,7 @@ class Player extends AGameObject {
         new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
     }
 
-    get_dist (x1, y1, x2 ,y2) {
+    get_dist(x1, y1, x2, y2) {
         let dx = x1 - x2;
         let dy = y1 - y2;
         return Math.sqrt(dx * dx + dy * dy);
@@ -84,7 +90,7 @@ class Player extends AGameObject {
 
     is_attacked(angle, damge) {
 
-        for (let i = 0; i < 20 + Math.random() * 10; i ++) {  // 粒子参数
+        for (let i = 0; i < 20 + Math.random() * 10; i++) {  // 粒子参数
             let x = this.x, y = this.y;
             let radius = this.radius * Math.random() * 0.1;
             let angle = Math.PI * 2 * Math.random();
@@ -142,11 +148,23 @@ class Player extends AGameObject {
     }
 
     render() {
-        this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        this.ctx.fillStyle = this.color;
-        this.ctx.fill();
+        if (this.is_me) {  // 是自己画图片
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.stroke();
+            this.ctx.clip();
+            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.restore();
+
+        } else {  // 敌人 画颜色
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.fillStyle = this.color;
+            this.ctx.fill();
+        }
     }
+
     on_destroy() {
         for (let i = 0; i < this.playground.players.length; i++) {  // 死亡后删除玩家
             if (this.playground.players[i] === this)

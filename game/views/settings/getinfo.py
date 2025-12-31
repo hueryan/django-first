@@ -20,7 +20,7 @@ def getinfo_web(request):
         return JsonResponse({
             'result':'success',
             'username': player.user.username,
-            'phote': player.photo,
+            'photo': player.photo,
         })
 
 def getinfo(request):  # 获取 platform
