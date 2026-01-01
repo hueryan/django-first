@@ -47,12 +47,12 @@ class Settings {
                 <input type="text" placeholder="用户名">
             </div>  
         </div> 
-        <div class="a-game-settings-password">
+        <div class="a-game-settings-password a-game-settings-password-first">
             <div class="a-game-settings-item">
                 <input type="password" placeholder="密码">
             </div>
         </div>
-        <div class="a-game-settings-password">
+        <div class="a-game-settings-password a-game-settings-password-second">
             <div class="a-game-settings-item">
                 <input type="password" placeholder="确认密码">
             </div>
@@ -79,9 +79,22 @@ class Settings {
 </div>
 `);
         this.$login = this.$settings.find('.a-game-settings-login');
+        this.$login_username = this.$login.find(".a-game-settings-username input");
+        this.$login_password = this.$login.find(".a-game-settings-password input");
+        this.$login_submit = this.$login.find(".a-game-settings-submit button");
+        this.$login_error_message = this.$login.find(".a-game-settings-error-messages");
+        this.$login_register = this.$login.find(".a-game-settings-option");
+
         this.$login.hide();
 
         this.$register = this.$settings.find('.a-game-settings-register');
+        this.$register_username = this.$register.find(".a-game-settings-username input");
+        this.$register_password = this.$register.find(".a-game-settings-password-first input");
+        this.$register_password_confirm = this.$register.find(".a-game-settings-password-second input");
+        this.$register_submit = this.$register.find(".a-game-settings-submit button");
+        this.$register_error_message = this.$register.find(".a-game-settings-error-messages");
+        this.$register_login = this.$register.find(".a-game-settings-option");
+
         this.$register.hide();
 
         this.root.$a_game.append(this.$settings);
@@ -91,6 +104,26 @@ class Settings {
 
     start() {
         this.getinfo();
+        this.add_listening_events();
+    }
+
+    add_listening_events () {
+        this.add_listening_events_login();
+        this.add_listening_events_register();
+    }
+    add_listening_events_login () {  /* 绑定登录函数 */
+        let outer = this;
+
+        this.$login_register.click(function () {
+            outer.register();
+        })
+    }
+    add_listening_events_register () {  /* 绑定注册函数 */
+        let outer = this;
+
+        this.$register_login.click(function () {
+            outer.login();
+        })
     }
 
     register() {  // 打开注册界面
