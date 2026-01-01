@@ -22,7 +22,7 @@ class Player extends AGameObject {
         this.cur_skill = null;
         if (this.is_me) {
             this.img = new Image();
-            console.log("url",this.playground.root.settings.photo);
+            // console.log("url",this.playground.root.settings.photo);  // 调试显示图片路径
             this.img.src = this.playground.root.settings.photo;
         }
     }
