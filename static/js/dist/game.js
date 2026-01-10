@@ -147,7 +147,7 @@ class Particle extends AGameObject {
         this.speed = speed;
         this.move_length = move_length;
         this.friction = 0.9;  // 摩擦力
-        this.eps = 1;  // 显示条件
+        this.eps = 0.01;  // 显示条件
     }
     start(){
 
@@ -166,8 +166,9 @@ class Particle extends AGameObject {
     }
 
     render(){
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
     }
@@ -189,7 +190,7 @@ class Player extends AGameObject {
         this.color = color;
         this.speed = speed;
         this.is_me = is_me;
-        this.eps = 0.1;
+        this.eps = 0.01;
         this.friction = 0.9;
         this.spent_time = 0;  // 玩家生成时间
 
@@ -205,8 +206,8 @@ class Player extends AGameObject {
         if (this.is_me) {  // 自己用键盘鼠标控制
             this.add_listening_events();
         } else {  // 敌人随机游走
-            let tx = Math.random() * this.playground.width;
-            let ty = Math.random() * this.playground.height;
+            let tx = Math.random() * this.playground.width / this.playground.scale;
+            let ty = Math.random() * this.playground.height / this.playground.scale;
             this.move_to(tx, ty);
         }
     }
@@ -220,10 +221,10 @@ class Player extends AGameObject {
         this.playground.game_map.$canvas.mousedown(function (e) {
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
-                outer.move_to(e.clientX - rect.left, e.clientY - rect.top);
+                outer.move_to((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
             } else if (e.which === 1) {
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball(e.clientX - rect.left, e.clientY - rect.top);
+                    outer.shoot_fireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
                 }
 
                 outer.cur_skill = null;
@@ -240,13 +241,13 @@ class Player extends AGameObject {
 
     shoot_fireball(tx, ty) {
         let x = this.x, y = this.y;
-        let radius = this.playground.height * 0.01;
+        let radius = 0.01;
         let angle = Math.atan2(ty - this.y, tx - this.x);
         let vx = Math.cos(angle), vy = Math.sin(angle);
         let color = "orange";
-        let speed = this.playground.height * 0.5;  // 火球速度
-        let move_length = this.playground.height * 1;
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, this.playground.height * 0.01);
+        let speed = 0.5;  // 火球速度
+        let move_length = 1;
+        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
     }
 
     get_dist(x1, y1, x2, y2) {
@@ -287,6 +288,11 @@ class Player extends AGameObject {
     }
 
     update() {
+        this.update_move();
+        this.render();
+    }
+
+    update_move() {  // 更新玩家移动
         this.spent_time += this.timedelta / 1000;
         if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {  // 设置开局4s后人机开始攻击, 每5s发射一次火球
             let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];  // 攻击随机一个玩家
@@ -296,7 +302,7 @@ class Player extends AGameObject {
             // this.shoot_fireball(player.x, player.y);
         }
 
-        if (this.damage_speed > 10) {  // 被攻击后，小于10不处理，可以自己移动
+        if (this.damage_speed > this.eps) {  // 被攻击后，小于10不处理，可以自己移动
             this.vx = this.vy = 0;
             this.move_length = 0;
             this.x += this.damage_x * this.damage_speed * this.timedelta / 1000;
@@ -307,8 +313,8 @@ class Player extends AGameObject {
                 this.move_length = 0;
                 this.vx = this.vy = 0;
                 if (!this.is_me) {
-                    let tx = Math.random() * this.playground.width;
-                    let ty = Math.random() * this.playground.height;
+                    let tx = Math.random() * this.playground.width / this.playground.scale;
+                    let ty = Math.random() * this.playground.height / this.playground.scale;
                     this.move_to(tx, ty);
                 }
             } else {
@@ -318,22 +324,22 @@ class Player extends AGameObject {
                 this.move_length -= moved;
             }
         }
-        this.render();
     }
 
     render() {
+        let scale = this.playground.scale;
         if (this.is_me) {  // 是自己画图片
             this.ctx.save();
             this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
             this.ctx.stroke();
             this.ctx.clip();
-            this.ctx.drawImage(this.img, this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+            this.ctx.drawImage(this.img, (this.x - this.radius) * scale, (this.y - this.radius) * scale, this.radius * 2 * scale, this.radius * 2 * scale);
             this.ctx.restore();
 
         } else {  // 敌人 画颜色
             this.ctx.beginPath();
-            this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
             this.ctx.fillStyle = this.color;
             this.ctx.fill();
         }
@@ -405,8 +411,9 @@ class FireBall extends AGameObject {
     }
 
     render() {
+        let scale = this.playground.scale;
         this.ctx.beginPath();
-        this.ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
         this.ctx.fillStyle = this.color;
         this.ctx.fill();
         // this.ctx.closePath();
@@ -456,10 +463,10 @@ class AGamePlayground {
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
         this.players = [];
-        this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, "white", this.height * 0.15, true))
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, true))
 
         for (let i = 0; i < 5; i++) {  // 创建敌人数量
-            this.players.push(new Player(this, this.width / 2, this.height / 2, this.height * 0.05, this.get_random_color(), this.height * 0.15, false))
+            this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, false))
         }
     }
 
