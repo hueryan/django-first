@@ -34,10 +34,11 @@ class AGameMenu {
         let outer = this;
         this.$single_mode.click(function (){
             outer.hide();
-            outer.root.playground.show();
+            outer.root.playground.show("single mode");
         });
         this.$multi_mode.click(function (){
-            console.log("click multi mode");
+            outer.hide();
+            outer.root.playground.show("multi mode");
         });
         this.$settings.click(function (){
             console.log("click settings");
@@ -174,7 +175,7 @@ class Particle extends AGameObject {
     }
 }
 class Player extends AGameObject {
-    constructor(playground, x, y, radius, color, speed, is_me) {
+    constructor(playground, x, y, radius, color, speed, character, username, photo) {
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -189,21 +190,23 @@ class Player extends AGameObject {
         this.radius = radius;
         this.color = color;
         this.speed = speed;
-        this.is_me = is_me;
+        this.character = character;
+        this.username = username;
+        this.photo = photo;
         this.eps = 0.01;
         this.friction = 0.9;
         this.spent_time = 0;  // 玩家生成时间
 
         this.cur_skill = null;
-        if (this.is_me) {
+        if (this.character !== "robot") {
             this.img = new Image();
             // console.log("url",this.playground.root.settings.photo);  // 调试显示图片路径
-            this.img.src = this.playground.root.settings.photo;
+            this.img.src = this.photo;
         }
     }
 
     start() {
-        if (this.is_me) {  // 自己用键盘鼠标控制
+        if (this.character === "me") {  // 自己用键盘鼠标控制
             this.add_listening_events();
         } else {  // 敌人随机游走
             let tx = Math.random() * this.playground.width / this.playground.scale;
@@ -294,7 +297,7 @@ class Player extends AGameObject {
 
     update_move() {  // 更新玩家移动
         this.spent_time += this.timedelta / 1000;
-        if (!this.is_me && this.spent_time > 4 && Math.random() < 1 / 300.0) {  // 设置开局4s后人机开始攻击, 每5s发射一次火球
+        if (this.character === "robot" && this.spent_time > 4 && Math.random() < 1 / 300.0) {  // 设置开局4s后人机开始攻击, 每5s发射一次火球
             let player = this.playground.players[Math.floor(Math.random() * this.playground.players.length)];  // 攻击随机一个玩家
             let tx = player.x + player.speed * this.vx * this.timedelta / 1000 * 0.3;
             let ty = player.y + player.speed * this.vy * this.timedelta / 1000 * 0.3;  // 预判0.3之后的位置
@@ -312,7 +315,7 @@ class Player extends AGameObject {
             if (this.move_length < this.eps) {
                 this.move_length = 0;
                 this.vx = this.vy = 0;
-                if (!this.is_me) {
+                if (this.character === "robot") {
                     let tx = Math.random() * this.playground.width / this.playground.scale;
                     let ty = Math.random() * this.playground.height / this.playground.scale;
                     this.move_to(tx, ty);
@@ -328,7 +331,7 @@ class Player extends AGameObject {
 
     render() {
         let scale = this.playground.scale;
-        if (this.is_me) {  // 是自己画图片
+        if (this.character !== "robot") {  // 用photo渲染头像
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(this.x * scale, this.y * scale, this.radius * scale, 0, Math.PI * 2, false);
@@ -454,20 +457,26 @@ class AGamePlayground {
         if (this.game_map) this.game_map.resize();
     }
 
-    show() {  // 打开playground界面
+    show(mode) {  // 打开playground界面
         this.$playground.show();
-
-        this.resize();
 
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
-        this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, true))
 
-        for (let i = 0; i < 5; i++) {  // 创建敌人数量
-            this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, false))
+        this.resize();
+
+        this.players = [];
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo))  // 用me代替自己
+
+        if (mode === "single mode") {  // 单人模式加人机
+            for (let i = 0; i < 5; i++) {  // 创建敌人数量
+                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"))
+            }
+        } else if (mode === "muti mode"){
+
         }
+
     }
 
     hide() {  // 关闭playground界面
