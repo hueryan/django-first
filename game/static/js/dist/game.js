@@ -117,10 +117,16 @@ requestAnimationFrame(A_GAME_ANIMATION);class GameMap extends AGameObject {
     start() {
 
     }
-
+    resize() {
+        this.ctx.canvas.width = this.playground.width;
+        this.ctx.canvas.height = this.playground.height;
+        this.ctx.fillStyle = "rgba(0,0,0, 1)";  // 不透明模板
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
     update() {
         this.render();
     }
+
 
     render() {
         this.ctx.fillStyle = "rgba(0,0,0, 0.2)";
@@ -412,6 +418,7 @@ class AGamePlayground {
         this.$playground = $(`<div class="a-game-playground"></div>`);
 
         this.hide();
+        this.root.$a_game.append(this.$playground);
 
         this.start();
     }
@@ -422,12 +429,29 @@ class AGamePlayground {
     }
 
     start() {
+        let outer = this;
+        $(window).resize(function (){
+            outer.resize();
+        })
     }
 
+    resize() {  // 用相对位置存储
+
+        this.width = this.$playground.width();
+        this.height = this.$playground.height();
+        let unit = Math.min(this.width / 16, this.height / 9);  // 类似单位 1
+        this.width = unit * 16;
+        this.height = unit * 9;
+        this.scale = this.height;
+
+        if (this.game_map) this.game_map.resize();
+    }
 
     show() {  // 打开playground界面
         this.$playground.show();
-        this.root.$a_game.append(this.$playground);
+
+        this.resize();
+
         this.width = this.$playground.width();
         this.height = this.$playground.height();
         this.game_map = new GameMap(this);
