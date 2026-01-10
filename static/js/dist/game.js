@@ -422,7 +422,28 @@ class FireBall extends AGameObject {
         // this.ctx.closePath();
     }
 }
-class AGamePlayground {
+class MultiPlayerSocket {
+    constructor(playground) {
+        this.playground = playground;
+        this.ws = new WebSocket("wss://app3749.acapp.acwing.com.cn/wss/multiplayer/");
+
+        this.start();
+    }
+
+    start() {
+
+    }
+
+    send_create_player() {
+        this.ws.send(JSON.stringify({
+            "message" : "hello app server",
+        }));
+    }
+
+    receive_create_player() {
+
+    }
+}class AGamePlayground {
     constructor(root) {
         this.root = root;
         this.$playground = $(`<div class="a-game-playground"></div>`);
@@ -458,6 +479,7 @@ class AGamePlayground {
     }
 
     show(mode) {  // 打开playground界面
+        let outer = this;
         this.$playground.show();
 
         this.width = this.$playground.width();
@@ -469,12 +491,17 @@ class AGamePlayground {
         this.players = [];
         this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo))  // 用me代替自己
 
+
         if (mode === "single mode") {  // 单人模式加人机
             for (let i = 0; i < 5; i++) {  // 创建敌人数量
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"))
             }
-        } else if (mode === "muti mode"){
+        } else if (mode === "multi mode"){
+            this.mps = new MultiPlayerSocket(this);
 
+            this.mps.ws.onopen = function () {
+                outer.mps.send_create_player();
+            };
         }
 
     }
