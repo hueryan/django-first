@@ -62,8 +62,18 @@ class AGameObject {
 
         this.has_called_start = false;  // 是否执行过start函数
         this.timedelta = 0;  // 当前帧距离上一帧的时间差
+        this.uuid = this.create_uuid();
+
     }
 
+    create_uuid() {
+        let res = "";
+        for (let i = 0; i < 8; i++) {
+            let x = parseInt(Math.floor(Math.random() * 10));
+            res += x;
+        }
+        return res;
+    }
     start() {  // 只会在第一帧执行
 
     }
@@ -435,8 +445,11 @@ class MultiPlayerSocket {
     }
 
     send_create_player() {
+        let outer = this;
         this.ws.send(JSON.stringify({
             "message" : "hello app server",
+            "event": "create_player",
+            'uuid': outer.uuid,  // 在 playerground 赋值
         }));
     }
 
@@ -498,6 +511,7 @@ class MultiPlayerSocket {
             }
         } else if (mode === "multi mode"){
             this.mps = new MultiPlayerSocket(this);
+            this.mps.uuid = this.players[0].uuid;
 
             this.mps.ws.onopen = function () {
                 outer.mps.send_create_player();

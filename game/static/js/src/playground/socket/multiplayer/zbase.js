@@ -11,8 +11,11 @@ class MultiPlayerSocket {
     }
 
     send_create_player() {
+        let outer = this;
         this.ws.send(JSON.stringify({
             "message" : "hello app server",
+            "event": "create_player",
+            'uuid': outer.uuid,  // 在 playerground 赋值
         }));
     }
 
