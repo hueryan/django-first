@@ -18,7 +18,7 @@ class AGamePlayground {
         let outer = this;
         $(window).resize(function (){
             outer.resize();
-        })
+        });
     }
 
     resize() {  // 用相对位置存储
@@ -44,19 +44,19 @@ class AGamePlayground {
         this.resize();
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo))  // 用me代替自己
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo));  // 用me代替自己
 
 
         if (mode === "single mode") {  // 单人模式加人机
             for (let i = 0; i < 5; i++) {  // 创建敌人数量
-                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"))
+                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"));
             }
         } else if (mode === "multi mode"){
             this.mps = new MultiPlayerSocket(this);
             this.mps.uuid = this.players[0].uuid;
 
             this.mps.ws.onopen = function () {
-                outer.mps.send_create_player();
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             };
         }
 

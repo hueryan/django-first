@@ -1,5 +1,8 @@
 class Player extends AGameObject {
     constructor(playground, x, y, radius, color, speed, character, username, photo) {
+
+        console.log(character, username, photo);
+
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -32,7 +35,7 @@ class Player extends AGameObject {
     start() {
         if (this.character === "me") {  // 自己用键盘鼠标控制
             this.add_listening_events();
-        } else {  // 敌人随机游走
+        } else if (this.character === "robot") {  // 机器人随机游走
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random() * this.playground.height / this.playground.scale;
             this.move_to(tx, ty);
@@ -90,7 +93,7 @@ class Player extends AGameObject {
         this.vy = Math.sin(angle);
     }
 
-    is_attacked(angle, damge) {
+    is_attacked(angle, damage) {
 
         for (let i = 0; i < 20 + Math.random() * 10; i++) {  // 粒子参数
             let x = this.x, y = this.y;
@@ -103,15 +106,15 @@ class Player extends AGameObject {
             new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
 
-        this.radius -= damge;
+        this.radius -= damage;
         if (this.radius < this.eps) {
             this.destroy();
             return false;
         }
         this.damage_x = Math.cos(angle);
         this.damage_y = Math.sin(angle);
-        this.damage_speed = damge * 100;  // 被攻击后击退距离
-        this.speed *= 1.25 // 被攻击后速度增加
+        this.damage_speed = damage * 100;  // 被攻击后击退距离
+        this.speed *= 1.25; // 被攻击后速度增加
     }
 
     update() {

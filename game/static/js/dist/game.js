@@ -186,6 +186,9 @@ class Particle extends AGameObject {
 }
 class Player extends AGameObject {
     constructor(playground, x, y, radius, color, speed, character, username, photo) {
+
+        console.log(character, username, photo);
+
         super();
         this.playground = playground;
         this.ctx = this.playground.game_map.ctx;
@@ -218,7 +221,7 @@ class Player extends AGameObject {
     start() {
         if (this.character === "me") {  // 自己用键盘鼠标控制
             this.add_listening_events();
-        } else {  // 敌人随机游走
+        } else if (this.character === "robot") {  // 机器人随机游走
             let tx = Math.random() * this.playground.width / this.playground.scale;
             let ty = Math.random() * this.playground.height / this.playground.scale;
             this.move_to(tx, ty);
@@ -276,7 +279,7 @@ class Player extends AGameObject {
         this.vy = Math.sin(angle);
     }
 
-    is_attacked(angle, damge) {
+    is_attacked(angle, damage) {
 
         for (let i = 0; i < 20 + Math.random() * 10; i++) {  // 粒子参数
             let x = this.x, y = this.y;
@@ -289,15 +292,15 @@ class Player extends AGameObject {
             new Particle(this.playground, x, y, radius, vx, vy, color, speed, move_length);
         }
 
-        this.radius -= damge;
+        this.radius -= damage;
         if (this.radius < this.eps) {
             this.destroy();
             return false;
         }
         this.damage_x = Math.cos(angle);
         this.damage_y = Math.sin(angle);
-        this.damage_speed = damge * 100;  // 被攻击后击退距离
-        this.speed *= 1.25 // 被攻击后速度增加
+        this.damage_speed = damage * 100;  // 被攻击后击退距离
+        this.speed *= 1.25; // 被攻击后速度增加
     }
 
     update() {
@@ -441,20 +444,49 @@ class MultiPlayerSocket {
     }
 
     start() {
-
+        this.receive();
     }
 
-    send_create_player() {
+    receive() {  // 从前端接受信息
+        let outer = this;
+
+        this.ws.onmessage = function (e) {  // 解析出来收到的信息
+            let data = JSON.parse(e.data);
+            // console.log(data);
+            let uuid = data.uuid;
+            if (uuid === outer.uuid) return false;
+
+            let event = data.event;
+            if (event === "create_player") {
+                outer.receive_create_player(uuid, data.username, data.photo);
+            }
+        };
+    }
+
+    send_create_player(username, photo) {
         let outer = this;
         this.ws.send(JSON.stringify({
-            "message" : "hello app server",
             "event": "create_player",
             'uuid': outer.uuid,  // 在 playerground 赋值
+            "username": username,
+            'photo': photo,
         }));
     }
 
-    receive_create_player() {
-
+    receive_create_player(uuid, username, photo) {
+        let player = new Player(
+            this.playground,
+            this.playground.width / 2 / this.playground.scale,
+            0.5,
+            0.05,
+            "white",
+            0.15,
+            "enemy",
+            username,
+            photo,
+        );
+        player.uuid = uuid;
+        this.playground.players.push(player);
     }
 }class AGamePlayground {
     constructor(root) {
@@ -476,7 +508,7 @@ class MultiPlayerSocket {
         let outer = this;
         $(window).resize(function (){
             outer.resize();
-        })
+        });
     }
 
     resize() {  // 用相对位置存储
@@ -502,19 +534,19 @@ class MultiPlayerSocket {
         this.resize();
 
         this.players = [];
-        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo))  // 用me代替自己
+        this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, "white", 0.15, "me", this.root.settings.username, this.root.settings.photo));  // 用me代替自己
 
 
         if (mode === "single mode") {  // 单人模式加人机
             for (let i = 0; i < 5; i++) {  // 创建敌人数量
-                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"))
+                this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"));
             }
         } else if (mode === "multi mode"){
             this.mps = new MultiPlayerSocket(this);
             this.mps.uuid = this.players[0].uuid;
 
             this.mps.ws.onopen = function () {
-                outer.mps.send_create_player();
+                outer.mps.send_create_player(outer.root.settings.username, outer.root.settings.photo);
             };
         }
 
