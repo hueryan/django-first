@@ -20,10 +20,22 @@ class MultiPlayerSocket {
             if (uuid === outer.uuid) return false;
 
             let event = data.event;
-            if (event === "create_player") {
+            if (event === "create_player") {  // 调用路由
                 outer.receive_create_player(uuid, data.username, data.photo);
+            } else if (event === "move_to") {
+                outer.receive_move_to(uuid, data.tx, data.ty);
             }
         };
+    }
+
+    get_player(uuid) {
+        let players = this.playground.players;
+        for (let i = 0; i < players.length; i++) {
+            let player = players[i];
+            if (player.uuid === uuid)
+                return player;
+        }
+        return null;
     }
 
     send_create_player(username, photo) {
@@ -50,5 +62,23 @@ class MultiPlayerSocket {
         );
         player.uuid = uuid;
         this.playground.players.push(player);
+    }
+
+    send_move_to(tx, ty) {
+        let outer = this;
+        this.ws.send(JSON.stringify({
+            'event': "move_to",
+            'uuid': outer.uuid,
+            'tx': tx,
+            'ty': ty,
+        }));
+    }
+
+    receive_move_to(uuid, tx, ty) {
+        let player = this.get_player(uuid);
+
+        if (player) {
+            player.move_to(tx, ty);
+        }
     }
 }

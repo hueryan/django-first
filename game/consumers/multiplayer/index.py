@@ -46,18 +46,29 @@ class MultiPlayer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send( # 群发消息
             self.room_name,
             {
-                'type': 'group_create_player',  # 将消息发送给组内所有人,type内容即为下面的函数名
+                'type': 'group_send_event',  # 将消息发送给组内所有人,type内容即为下面的函数名
                 'event': 'create_player',
                 'uuid': data['uuid'],
                 'username': data['username'],
                 'photo': data['photo'],
             }
         )
-    async def group_create_player(self, data):  # 每个请求接收到连接,发送给前端
+    async def group_send_event(self, data):  # 每个请求接收到连接,发送给前端
         await self.send(text_data=json.dumps(data))
+
+    async def move_to(self, data):
+        await self.channel_layer.group_send(self.room_name, {
+            'type': 'group_send_event',
+            'event': 'move_to',
+            'uuid': data['uuid'],
+            'tx': data['tx'],
+            'ty': data['ty'],
+        })
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data['event']
         if event == 'create_player':
             await self.create_player(data)
+        elif event == 'move_to':
+            await self.move_to(data)
