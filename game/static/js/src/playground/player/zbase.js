@@ -1,7 +1,7 @@
 class Player extends AGameObject {
     constructor(playground, x, y, radius, color, speed, character, username, photo) {
 
-        console.log(character, username, photo);
+        // console.log(character, username, photo);
 
         super();
         this.playground = playground;
