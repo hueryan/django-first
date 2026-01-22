@@ -144,6 +144,13 @@ class Player extends AGameObject {
         this.speed *= 1.25; // 被攻击后速度增加
     }
 
+    receive_attack(x, y, angle, damage, ball_uuid, attacker) {
+        attacker.destroy_fireball(ball_uuid);
+        this.x = x;
+        this.y = y;
+        this.is_attacked(angle, damage);
+    }
+
     update() {
         this.update_move();
         this.render();

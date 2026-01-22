@@ -25,7 +25,11 @@ class FireBall extends AGameObject {
         }
 
         this.update_move();
-        this.update_attack();
+
+        if (this.player.character !== 'enemy') {
+            this.update_attack();
+        }
+
 
         this.render();
     }
@@ -62,6 +66,10 @@ class FireBall extends AGameObject {
     attack(player) {
         let angle = Math.atan2(player.y - this.y, player.x - this.x);
         player.is_attacked(angle, this.damage);
+
+        if (this.playground.mode === "multi mode") {
+            this.playground.mps.send_attack(player.uuid, player.x, player.y, angle, this.damage, this.uuid);
+        }
         this.destroy();
     }
 
