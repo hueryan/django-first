@@ -4,19 +4,29 @@ from django.conf import settings
 from django.core.cache import cache
 
 class MultiPlayer(AsyncWebsocketConsumer):
-
     async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        print('disconnect')
+        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+
+    async def create_player(self, data):
         self.room_name = None
 
-        for i in range(1000):  # 枚举房间
-            name = "room-%d" %(i)
+        start = 0
+        if data['username'] != "hujing":  # 不是该用户则start从10000开始
+            start = 10000
+
+        for i in range(start, 1000000000):  # 枚举房间
+            name = "room-%d" % (i)
             if not cache.has_key(name) or len(cache.get(name)) < settings.ROOM_CAPACITY:
                 self.room_name = name
                 break
 
         if not self.room_name:
             return
-        await self.accept()
+
 
         if not cache.has_key(self.room_name):
             cache.set(self.room_name, [], 3600)  # 有效期 1h
@@ -31,11 +41,6 @@ class MultiPlayer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room_name, self.channel_name)
 
-    async def disconnect(self, close_code):
-        print('disconnect')
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
-
-    async def create_player(self, data):
         players = cache.get(self.room_name)
         players.append({  # 将玩家加入redis中
             'uuid': data['uuid'],
@@ -65,6 +70,16 @@ class MultiPlayer(AsyncWebsocketConsumer):
             'ty': data['ty'],
         })
 
+    async def shoot_fireball(self, data):
+        await self.channel_layer.group_send( self.room_name, {
+            'type': 'group_send_event',
+            'event': 'shoot_fireball',
+            'uuid': data['uuid'],
+            'tx': data['tx'],
+            'ty': data['ty'],
+            'ball_uuid': data['ball_uuid'],
+        })
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         event = data['event']
@@ -72,3 +87,5 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.create_player(data)
         elif event == 'move_to':
             await self.move_to(data)
+        elif event == 'shoot_fireball':
+            await self.shoot_fireball(data)

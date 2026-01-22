@@ -23,6 +23,7 @@ class Player extends AGameObject {
         this.eps = 0.01;
         this.friction = 0.9;
         this.spent_time = 0;  // 玩家生成时间
+        this.fireballs = [];
 
         this.cur_skill = null;
         if (this.character !== "robot") {
@@ -60,8 +61,14 @@ class Player extends AGameObject {
                 }
 
             } else if (e.which === 1) {
+                let tx = (e.clientX - rect.left) / outer.playground.scale;
+                let ty = (e.clientY - rect.top) / outer.playground.scale;
                 if (outer.cur_skill === "fireball") {
-                    outer.shoot_fireball((e.clientX - rect.left) / outer.playground.scale, (e.clientY - rect.top) / outer.playground.scale);
+                    let fireball = outer.shoot_fireball(tx, ty);
+
+                    if (outer.playground.mode === "multi mode") {
+                        outer.playground.mps.send_shoot_fireball(tx, ty, fireball.uuid);
+                    }
                 }
 
                 outer.cur_skill = null;
@@ -84,7 +91,20 @@ class Player extends AGameObject {
         let color = "orange";
         let speed = 0.5;  // 火球速度
         let move_length = 1;
-        new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
+        let fireball = new FireBall(this.playground, this, x, y, radius, vx, vy, color, speed, move_length, 0.01);
+        this.fireballs.push(fireball);
+
+        return fireball;
+    }
+
+    destroy_fireball (uuid) {  // 删除火球
+        for (let i = 0; i < this.fireballs.length; i++) {
+            let fireball = this.fireballs[i];
+            if (fireball.uuid === uuid) {
+                fireball.destroy();
+                break;
+            }
+        }
     }
 
     get_dist(x1, y1, x2, y2) {
@@ -184,8 +204,10 @@ class Player extends AGameObject {
 
     on_destroy() {
         for (let i = 0; i < this.playground.players.length; i++) {  // 死亡后删除玩家
-            if (this.playground.players[i] === this)
+            if (this.playground.players[i] === this) {
                 this.playground.players.splice(i, 1);
+                break;
+            }
         }
     }
 }
