@@ -15,8 +15,8 @@ class MultiPlayer(AsyncWebsocketConsumer):
         self.room_name = None
 
         start = 0
-        if data['username'] != "hujing":  # 不是该用户则start从10000开始
-            start = 10000
+        # if data['username'] != "hujing":  # 不是该用户则start从10000开始
+        #     start = 10000
 
         for i in range(start, 1000000000):  # 枚举房间
             name = "room-%d" % (i)
@@ -91,7 +91,15 @@ class MultiPlayer(AsyncWebsocketConsumer):
             'angle': data['angle'],
             'damage': data['damage'],
             'ball_uuid': data['ball_uuid'],
+        })
 
+    async def blink(self, data):
+        await self.channel_layer.group_send( self.room_name, {
+            'type': 'group_send_event',
+            'event': 'blink',
+            'uuid': data['uuid'],
+            'tx': data['tx'],
+            'ty': data['ty'],
         })
 
     async def receive(self, text_data):  # 加路由
@@ -105,3 +113,5 @@ class MultiPlayer(AsyncWebsocketConsumer):
             await self.shoot_fireball(data)
         elif event == 'attack':
             await self.attack(data)
+        elif event == 'blink':
+            await self.blink(data)
