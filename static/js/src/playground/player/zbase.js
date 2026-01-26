@@ -47,7 +47,7 @@ class Player extends AGameObject {
     }
 
     start() {
-        this.playground.player_count ++;
+        this.playground.player_count++;
         this.playground.notice_board.write("已就绪：" + this.playground.player_count + "人");
 
         if (this.playground.player_count >= 3) {
@@ -113,7 +113,6 @@ class Player extends AGameObject {
                 return true;  // 返回 false 截取按键失效，刚无法 Ctrl + R
 
 
-
             if (e.which === 81) {  // q 键
                 if (outer.fireball_coldtime > outer.eps)
                     return true;
@@ -144,7 +143,7 @@ class Player extends AGameObject {
         return fireball;
     }
 
-    destroy_fireball (uuid) {  // 删除火球
+    destroy_fireball(uuid) {  // 删除火球
         for (let i = 0; i < this.fireballs.length; i++) {
             let fireball = this.fireballs[i];
             if (fireball.uuid === uuid) {
@@ -157,7 +156,7 @@ class Player extends AGameObject {
     blink(tx, ty) {
         let d = this.get_dist(this.x, this.y, tx, ty);
         d = Math.min(d, 0.8);  // 控制闪现距离
-        let angle = Math.atan2(ty- this.y, tx - this.x);
+        let angle = Math.atan2(ty - this.y, tx - this.x);
         this.x += d * Math.cos(angle);
         this.y += d * Math.sin(angle);
 
@@ -213,7 +212,9 @@ class Player extends AGameObject {
         this.spent_time += this.timedelta / 1000;
 
         if (this.character === "me" && this.playground.state === "fighting") {
-            this.update_coldtime();
+            if (this.fireball_coldtime > this.eps || this.blink_coldtime > this.eps) {
+                this.update_coldtime();
+            }
         }
 
 
@@ -223,14 +224,21 @@ class Player extends AGameObject {
     }
 
     update_coldtime() {
-        this.fireball_coldtime -= this.timedelta / 1000;
-        this.fireball_coldtime = Math.max(this.fireball_coldtime, 0);
+        // 火球技能冷却：仅当冷却时间>0时才执行递减计算
+        if (this.fireball_coldtime > this.eps) { // 用已定义的精度阈值eps判断，避免浮点数精度问题
+            this.fireball_coldtime -= this.timedelta / 1000;
+            this.fireball_coldtime = Math.max(this.fireball_coldtime, 0);
+            // console.log(this.fireball_coldtime); // 仅在冷却中时才可能打印，避免无意义输出
+        }
 
-        console.log(this.fireball_coldtime);
-
-        this.blink_coldtime -= this.timedelta / 1000;
-        this.blink_coldtime = Math.max(this.blink_coldtime, 0);
+        // 闪现技能冷却：仅冷却中时计算
+        if (this.blink_coldtime > this.eps) {
+            this.blink_coldtime -= this.timedelta / 1000;
+            this.blink_coldtime = Math.max(this.blink_coldtime, 0);
+            // console.log(this.blink_coldtime);
+        }
     }
+
 
     update_move() {  // 更新玩家移动
         if (this.character === "robot" && this.spent_time > 4 && Math.random() < 1 / 300.0) {  // 设置开局4s后人机开始攻击, 每5s发射一次火球
@@ -300,7 +308,7 @@ class Player extends AGameObject {
         this.ctx.drawImage(this.fireball_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
         this.ctx.restore();
 
-        if (this.fireball_coldtime > 0) {
+        if (this.fireball_coldtime > this.eps) {
             // 给技能增加半透明蒙版
             this.ctx.beginPath();
             this.ctx.moveTo(x * scale, y * scale);  // 移动圆心
@@ -320,7 +328,7 @@ class Player extends AGameObject {
         this.ctx.drawImage(this.blink_img, (x - r) * scale, (y - r) * scale, r * 2 * scale, r * 2 * scale);
         this.ctx.restore();
 
-        if (this.blink_coldtime > 0) {
+        if (this.blink_coldtime > this.eps) {
             // 给技能增加半透明蒙版
             this.ctx.beginPath();
             this.ctx.moveTo(x * scale, y * scale);  // 移动圆心
