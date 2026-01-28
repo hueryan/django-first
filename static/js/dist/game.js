@@ -113,7 +113,83 @@ let A_GAME_ANIMATION = function(timestamp) {
     requestAnimationFrame(A_GAME_ANIMATION);
 }
 
-requestAnimationFrame(A_GAME_ANIMATION);class GameMap extends AGameObject {
+requestAnimationFrame(A_GAME_ANIMATION);class ChatField {
+    constructor(playground) {
+        this.playground = playground;
+
+        this.$history = $(`<div class="a-game-chat-field-history">历史记录</div>`);  // 历史输入区
+        this.$input = $(`<input type="text" class="a-game-chat-field-input">`);  // 输入框
+
+        this.$history.hide();  // 隐藏 hide是Jquery的API
+        this.$input.hide();
+
+        this.func_id = null;
+
+        this.playground.$playground.append(this.$history);
+        this.playground.$playground.append(this.$input);
+
+        this.start();
+    }
+
+    start() {
+        this.add_listening_events();
+    }
+
+    add_listening_events() {
+        let outer = this;
+
+        this.$input.keydown(function(e) {
+            if (e.which === 27) {  // ESC
+                outer.hide_input();
+                return false;
+            } else if (e.which === 13) {  // ENTER
+                let username = outer.playground.root.settings.username;
+                let text = outer.$input.val();
+                if (text) {
+                    outer.$input.val("");
+                    outer.add_message(username, text);
+                }
+                return false;
+            }
+        });
+    }
+
+    render_message(message) {
+        return $(`<div>${message}</div>`);
+    }
+
+    add_message(username, text) {
+        this.show_history();
+        let message = `[${username}]${text}`;
+        this.$history.append(this.render_message(message));
+        this.$history.scrollTop(this.$history[0].scrollHeight);
+    }
+
+    show_history() {  // 有信息时候显示 3s
+        let outer = this;
+        this.$history.fadeIn();
+
+        if (this.func_id) clearTimeout(this.func_id);
+
+        this.func_id = setTimeout(function() {
+            outer.$history.fadeOut();
+            outer.func_id = null;
+        }, 3000);
+    }
+
+    show_input() {
+        this.show_history();
+
+        this.$input.show();
+        this.$input.focus();
+    }
+
+    hide_input() {
+        this.$input.hide();
+        this.playground.game_map.$canvas.focus();
+    }
+}
+class GameMap extends AGameObject {
     constructor(playground) {
         super();
         this.playground = playground;
@@ -286,7 +362,7 @@ class Player extends AGameObject {
 
         this.playground.game_map.$canvas.mousedown(function (e) {
             if (outer.playground.state !== "fighting")  // 只有 fighting 才可以操作
-                return false;
+                return true;
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
                 let tx = (e.clientX - rect.left) / outer.playground.scale;
@@ -323,6 +399,17 @@ class Player extends AGameObject {
 
         this.playground.game_map.$canvas.keydown(function (e) {
             // console.log(e.which);  // 在终端按对应按键获取其值
+            if (e.which === 13) {  // Enter
+                if (outer.playground.mode === "multi mode") {  // 打开聊天框
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            } else if (e.which === 27) {  // esc
+                if (outer.playground.mode === "multi mode") {  // 关闭聊天框
+                    outer.playground.chat_field.hide_input();
+                }
+            }
+
             if (outer.playground.state !== "fighting")
                 return true;  // 返回 false 截取按键失效，刚无法 Ctrl + R
 
@@ -868,6 +955,7 @@ class MultiPlayerSocket {
                 this.players.push(new Player(this, this.width / 2 / this.scale, 0.5, 0.05, this.get_random_color(), 0.15, "robot"));
             }
         } else if (mode === "multi mode"){
+            this.chat_field = new ChatField(this);
             this.mps = new MultiPlayerSocket(this);
             this.mps.uuid = this.players[0].uuid;
 

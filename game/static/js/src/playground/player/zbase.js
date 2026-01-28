@@ -72,7 +72,7 @@ class Player extends AGameObject {
 
         this.playground.game_map.$canvas.mousedown(function (e) {
             if (outer.playground.state !== "fighting")  // 只有 fighting 才可以操作
-                return false;
+                return true;
             const rect = outer.ctx.canvas.getBoundingClientRect();
             if (e.which === 3) {
                 let tx = (e.clientX - rect.left) / outer.playground.scale;
@@ -109,6 +109,17 @@ class Player extends AGameObject {
 
         this.playground.game_map.$canvas.keydown(function (e) {
             // console.log(e.which);  // 在终端按对应按键获取其值
+            if (e.which === 13) {  // Enter
+                if (outer.playground.mode === "multi mode") {  // 打开聊天框
+                    outer.playground.chat_field.show_input();
+                    return false;
+                }
+            } else if (e.which === 27) {  // esc
+                if (outer.playground.mode === "multi mode") {  // 关闭聊天框
+                    outer.playground.chat_field.hide_input();
+                }
+            }
+
             if (outer.playground.state !== "fighting")
                 return true;  // 返回 false 截取按键失效，刚无法 Ctrl + R
 
