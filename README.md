@@ -7,7 +7,7 @@
 - `ESC` 关闭聊天框
 
 ## 项目运行
-配置DJANGO_HOST
+在`~/app/app/settings.env` 配置DJANGO_HOST
 ```shell
 DJANGO_HOST = "xxx.xxx.xxx.xxx"  # 公网 IP
 ```
