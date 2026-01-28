@@ -7,12 +7,17 @@
 - `ESC` 关闭聊天框
 
 ## 项目运行
+```shell
+mv django-first app
+```
 在`~/app/app/settings.env` 配置DJANGO_HOST
 ```shell
 DJANGO_HOST = "xxx.xxx.xxx.xxx"  # 公网 IP
 ```
 同时配置自己的域名，可以在项目中替换以下内容通过ag查找
 `ag app3749.acapp.acwing.com.cn`
+同时参考[该链接](https://github.com/hueryan/AcWing-class-study/blob/master/%E5%B7%A5%E7%A8%8B%E9%A1%B9%E7%9B%AE/Django%E6%A1%86%E6%9E%B6/5.%20%E9%83%A8%E7%BD%B2nginx%E4%B8%8E%E5%AF%B9%E6%8E%A5acapp.md)配置nginx等
+
 
 启动服务
 ```shell
