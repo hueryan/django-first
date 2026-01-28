@@ -14,6 +14,8 @@ DJANGO_HOST = "xxx.xxx.xxx.xxx"  # 公网 IP
 
 启动服务
 ```shell
+cd ~/app
+./scripts/compress_game_js.sh
 sudo /etc/init.d/nginx start
 sudo redis-server /etc/redis/redis.conf
 uwsgi --ini ~/app/scripts/uwsgi.ini
