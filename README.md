@@ -11,6 +11,8 @@
 ```shell
 DJANGO_HOST = "xxx.xxx.xxx.xxx"  # 公网 IP
 ```
+同时配置自己的域名，可以在项目中替换以下内容通过ag查找
+`ag app3749.acapp.acwing.com.cn`
 
 启动服务
 ```shell
