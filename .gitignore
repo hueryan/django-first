@@ -2,3 +2,5 @@
 *.env
 *.bak
 .idea*
+static/*
+game/static/js/dist/game.js
