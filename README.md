@@ -17,6 +17,13 @@ DJANGO_HOST = "xxx.xxx.xxx.xxx"  # 公网 IP
 启动服务
 ```shell
 cd ~/app
+mkdir ~/app/game/static/js/dist
+python3 manage.py migrate  # 创建db.sqlite3
+python3 manage.py createsuperuser  # 如果需要重新创建管理员
+python3 ~/app/manage.py makemigrations  # 数据表定义更新之后
+python3 ~/app/manage.py migrate  # 数据表定义更新之后, 此时自定义的表被应用到数据库中
+
+
 ./scripts/compress_game_js.sh
 sudo /etc/init.d/nginx start
 sudo redis-server /etc/redis/redis.conf
@@ -26,7 +33,7 @@ daphne -b 0.0.0.0 -p 5015 app.asgi:application
 
 ### 清空 redis 脚本
 ```shell
-cd ~/app/
+cd ~/app
 python3 manage.py shell  # 打开django-shell
 ```
 ```python
