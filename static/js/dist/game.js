@@ -117,7 +117,7 @@ requestAnimationFrame(A_GAME_ANIMATION);class GameMap extends AGameObject {
     constructor(playground) {
         super();
         this.playground = playground;
-        this.$canvas = $(`<canvas></canvas>`);
+        this.$canvas = $(`<canvas tabindex=0></canvas>`);
         this.ctx = this.$canvas[0].getContext('2d');
         this.ctx.canvas.width = this.playground.width;
         this.ctx.canvas.height = this.playground.height;
@@ -126,7 +126,7 @@ requestAnimationFrame(A_GAME_ANIMATION);class GameMap extends AGameObject {
     }
 
     start() {
-
+        this.$canvas.focus();  // 聚焦
     }
     resize() {
         this.ctx.canvas.width = this.playground.width;
@@ -321,7 +321,7 @@ class Player extends AGameObject {
             }
         });
 
-        $(window).keydown(function (e) {
+        this.playground.game_map.$canvas.keydown(function (e) {
             // console.log(e.which);  // 在终端按对应按键获取其值
             if (outer.playground.state !== "fighting")
                 return true;  // 返回 false 截取按键失效，刚无法 Ctrl + R

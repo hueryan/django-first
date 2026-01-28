@@ -107,7 +107,7 @@ class Player extends AGameObject {
             }
         });
 
-        $(window).keydown(function (e) {
+        this.playground.game_map.$canvas.keydown(function (e) {
             // console.log(e.which);  // 在终端按对应按键获取其值
             if (outer.playground.state !== "fighting")
                 return true;  // 返回 false 截取按键失效，刚无法 Ctrl + R
