@@ -108,7 +108,7 @@ class Player extends AGameObject {
         });
 
         this.playground.game_map.$canvas.keydown(function (e) {
-            console.log("keydown");
+            // console.log("keydown");
             // console.log(e.which);  // 在终端按对应按键获取其值
             if (e.which === 13) {  // Enter
                 if (outer.playground.mode === "multi mode") {  // 打开聊天框

@@ -27,7 +27,7 @@ class AGamePlayground {
         let outer = this;
         let uuid = this.create_uuid();  // 添加uuid关闭的时候只删除自己的
         $(window).on(`resize.${uuid}`, function (){
-            console.log('resize');
+            // console.log('resize');
             outer.resize();
         });
 
@@ -62,6 +62,7 @@ class AGamePlayground {
         this.state = "waiting";  // waiting -> fighting -> over
         this.notice_board = new NoticeBoard(this);
         // console.log(this.notice_board);
+        this.score_board = new ScoreBoard(this);
         this.player_count = 0;
 
         this.resize();
