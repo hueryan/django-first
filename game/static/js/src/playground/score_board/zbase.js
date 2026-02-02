@@ -21,7 +21,7 @@ class ScoreBoard extends AGameObject {
         let outer = this;
         let $canvas = this.playground.game_map.$canvas;
 
-        $canvas.on(`click.${outer.uuid}`, function () {  // 返回菜单界面
+        $canvas.on(`click`, function () {  // 返回菜单界面
             outer.playground.hide();
             outer.playground.root.menu.show();
         });

@@ -88,6 +88,26 @@ class AGamePlayground {
     }
 
     hide() {  // 关闭playground界面
+        while (this.players && this.players.length > 0) {  // 移除 players
+            this.players[0].destroy();  // 调用 AGameObject 的 destroy，它又调用player的 on_destroy
+        }
+
+        if (this.game_map) {  // 移除 game_map
+            this.game_map.destroy();
+            this.game_map = null;
+        }
+
+        if (this.notice_board) {  // notice_board
+            this.notice_board.destroy();
+            this.notice_board = null;
+        }
+
+        if (this.score_board) {
+            this.score_board.destroy();
+            this.score_board = null;
+        }
+
+        this.$playground.empty();
         this.$playground.hide();
 
     }
