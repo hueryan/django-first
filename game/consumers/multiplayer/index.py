@@ -97,7 +97,7 @@ class MultiPlayer(AsyncWebsocketConsumer):
                 if player['hp'] <= 0:
                     await database_sync_to_async(db_update_player_score)(player['username'], -5)  # 输 -5
                 else:
-                    await database_sync_to_async(db_update_player_score)(player['username'], 123123) # 赢 +10
+                    await database_sync_to_async(db_update_player_score)(player['username'], 10) # 赢 +10
 
         await self.channel_layer.group_send( self.room_name, {
             'type': 'group_send_event',
