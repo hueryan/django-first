@@ -14,7 +14,7 @@ class ScoreBoard extends AGameObject {
     }
 
     start() {
-        this.lose();
+
     }
 
     add_listening_events() {
