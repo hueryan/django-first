@@ -17,12 +17,32 @@ class ScoreBoard extends AGameObject {
         this.lose();
     }
 
+    add_listening_events() {
+        let outer = this;
+        let $canvas = this.playground.game_map.$canvas;
+
+        $canvas.on(`click.${outer.uuid}`, function () {  // 返回菜单界面
+            outer.playground.hide();
+            outer.playground.root.menu.show();
+        });
+    }
+
     win() {
         this.state = "win";
+
+        let outer = this;
+        setTimeout(function () {  // 1s后调用监听事件
+            outer.add_listening_events();
+        }, 1000);
     }
 
     lose() {
         this.state = "lose";
+
+        let outer = this;
+        setTimeout(function () {
+            outer.add_listening_events();
+        }, 1000);
     }
 
     late_update() {
