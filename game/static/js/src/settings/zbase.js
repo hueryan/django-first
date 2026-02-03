@@ -121,7 +121,7 @@ class Settings {
     refresh_jwt_token() {  // 自动刷新逻辑
         setInterval(() => {
             $.ajax({
-                url: "/settings/token/refresh/",
+                url: "https://app3749.acapp.acwing.com.cn/settings/token/refresh/",
                 type: "post",
                 data: {
                     refresh: this.root.refresh,
@@ -135,7 +135,7 @@ class Settings {
 
         setTimeout(() => {
             $.ajax({
-                url: "/settings/ranklist/",
+                url: "https://app3749.acapp.acwing.com.cn/settings/ranklist/",
                 type: "get",
                 headers: {
                     'Authorization': "Bearer " + this.root.access,
@@ -262,14 +262,17 @@ class Settings {
     }
 
     acapp_login(appid, redirect_uri, scope, state) {
-        let outer = this;
-        this.root.AcWingOS.api.oauth2.authorize(appid, redirect_uri, scope, state, function (resp) {
+        this.root.AcWingOS.api.oauth2.authorize(appid, redirect_uri, scope, state, resp => {
             // console.log(resp);
             if (resp.result === "success") {
-                outer.username = resp.username;
-                outer.photo = resp.photo;
-                outer.hide();
-                outer.root.menu.show();
+                this.username = resp.username;
+                this.photo = resp.photo;
+                this.hide();
+                this.root.menu.show();
+                // console.log(resp);
+                this.root.access = resp.access;
+                this.root.refresh = resp.refresh;
+                this.refresh_jwt_token();
             }
         });
     }
