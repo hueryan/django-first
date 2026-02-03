@@ -11,7 +11,7 @@
     <script type="module">
         import {AGame} from "{% static 'js/dist/game.js' %}";
         $(document).ready(function(){
-            let a_game = new AGame("a_game_123456");
+            let a_game = new AGame("a_game_123456", null, "{{ access }}", "{{ refresh }}");
         });
     </script>
 </body>
